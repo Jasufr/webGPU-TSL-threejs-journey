@@ -1,3 +1,5 @@
+import basicSsl from '@vitejs/plugin-basic-ssl'
+
 export default {
     root: 'src/', // Sources files (typically where index.html is)
     publicDir: '../static/', // Path from "root" to static assets (files that are served as they are)
@@ -14,6 +16,8 @@ export default {
     },
     plugins:
     [
+        basicSsl(),
+
         // Minimalist plugin to reload the page on file change in ./static/
         {
             name: 'watch-and-reload',

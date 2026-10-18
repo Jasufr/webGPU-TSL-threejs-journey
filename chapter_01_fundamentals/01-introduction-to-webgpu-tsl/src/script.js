@@ -1,11 +1,11 @@
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import * as THREE from 'three'
+import * as THREE from 'three/webgpu'
 
 /**
  * Base
  */
 // Canvas
-const canvas = document.querySelector('canvas.webgl')
+const canvas = document.querySelector('canvas.threejs')
 
 // Scene
 const scene = new THREE.Scene()
@@ -54,7 +54,7 @@ controls.enableDamping = true
 /**
  * Renderer
  */
-const renderer = new THREE.WebGLRenderer({
+const renderer = new THREE.WebGPURenderer({
     canvas: canvas,
     antialias: true
 })
@@ -126,9 +126,9 @@ const tick = () =>
 
     // Render
     renderer.render(scene, camera)
-
-    // Call tick again on the next frame
-    window.requestAnimationFrame(tick)
 }
 
-tick()
+renderer.setAnimationLoop(tick)
+
+
+console.log(renderer.backend)
