@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { uv } from 'three/tsl'
-
+import { attribute, checker, color, materialColor, modelDirection, modelNormalMatrix, modelPosition, modelScale, normalLocal, normalView, normalWorld, positionGeometry, positionLocal, positionWorld, screenCoordinate, screenUV, userData, uv, vec2, vec3, vec4 } from 'three/tsl'
+import { TransformControls } from 'three/addons/controls/TransformControls.js'
 /**
  * Base
  */
@@ -64,6 +64,7 @@ renderer.shadowMap.type = THREE.PCFShadowMap
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.setClearColor(0x111111)
+// renderer.setViewport(100, 100, sizes.width / 4, sizes.height / 4)
 
 /**
  * Floor
@@ -75,6 +76,8 @@ renderer.setClearColor(0x111111)
     const geometry = new THREE.PlaneGeometry(10, 10, 10, 10)
 
     const material = new THREE.MeshStandardNodeMaterial({ map: textureColor })
+    const pattern = vec3(checker(uv().mul(4)))
+    material.colorNode = materialColor.mul(pattern)
 
     const mesh = new THREE.Mesh(geometry, material)
     mesh.rotation.x = - Math.PI * 0.5
@@ -89,12 +92,38 @@ renderer.setClearColor(0x111111)
     const geometry = new THREE.TorusKnotGeometry(0.5, 0.24, 128, 32)
 
     const material = new THREE.MeshStandardNodeMaterial()
+    material.outputNode = vec4(attribute('position'), 1)
 
     const mesh = new THREE.Mesh(geometry, material)
+    mesh.userData.foo = new THREE.Color('#705DF2')
     mesh.castShadow = true
     mesh.receiveShadow = true
     mesh.position.y = 1
     scene.add(mesh)
+
+    setTimeout(() => {
+        mesh.userData.foo.set('orange')
+    }, 2000)
+
+    // TransformControl
+    const transformControls = new TransformControls(camera, canvas)
+    transformControls.attach(mesh)
+    scene.add(transformControls.getHelper())
+
+    transformControls.addEventListener('dragging-changed', (event) =>
+    {
+        controls.enabled = !event.value
+    })
+
+    window.addEventListener('keydown', (event) =>
+    {
+        if(event.key === 'g')
+            transformControls.setMode('translate')
+        else if(event.key === 'r')
+            transformControls.setMode('rotate')
+        else if(event.key === 's')
+            transformControls.setMode('scale')
+    })
 }
 
 /**
