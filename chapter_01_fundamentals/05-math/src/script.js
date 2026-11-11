@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { uv } from 'three/tsl'
+import { hash, mx_noise_float, mx_noise_vec3, positionLocal, positionWorld, rand, rotate, time, uv, vec2, vec3 } from 'three/tsl'
 
 /**
  * Base
@@ -75,6 +75,8 @@ renderer.setClearColor(0x111111)
     const geometry = new THREE.PlaneGeometry(10, 10, 10, 10)
 
     const material = new THREE.MeshStandardNodeMaterial({ map: textureColor, transparent: true })
+    const pattern = rand(uv().mul(100).floor())
+    material.colorNode = vec3(pattern)
 
     const fade = uv().sub(0.5).length().smoothstep(0.5, 0.2)
     material.opacityNode = fade
@@ -92,6 +94,18 @@ renderer.setClearColor(0x111111)
     const geometry = new THREE.TorusKnotGeometry(0.5, 0.24, 128, 32)
 
     const material = new THREE.MeshStandardNodeMaterial()
+
+    const angle = time.add(positionLocal.y).sin()
+    const newXZ = rotate(positionLocal.xz, angle)
+    material.positionNode = vec3(
+        newXZ.x,
+        positionLocal.y,
+        newXZ.y
+    )
+
+
+    const noise = mx_noise_vec3(positionWorld.mul(4))
+    material.colorNode = noise
 
     const mesh = new THREE.Mesh(geometry, material)
     mesh.castShadow = true
