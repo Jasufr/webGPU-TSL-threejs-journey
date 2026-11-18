@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { Inspector } from 'three/addons/inspector/Inspector.js'
-import { uv } from 'three/tsl'
+import { blendBurn, blendColor, blendDodge, float, grayscale, hue, materialColor, mix, normalLocal, normalWorld, oscSine, positionLocal, positionWorld, rotateUV, saturation, texture, time, triplanarTexture, uv, vec2, vec4, vibrance } from 'three/tsl'
 
 /**
  * Base
@@ -21,6 +21,10 @@ const textureLoader = new THREE.TextureLoader()
  */
 const uvChecker = textureLoader.load('./uvChecker.png')
 uvChecker.colorSpace = THREE.SRGBColorSpace
+uvChecker.wrapS = THREE.MirroredRepeatWrapping
+uvChecker.wrapT = THREE.MirroredRepeatWrapping
+uvChecker.repeat.set(3, 3)
+uvChecker.rotation = 1
 
 /**
  * Sizes
@@ -80,7 +84,24 @@ renderer.inspector = new Inspector()
 {
     const geometry = new THREE.PlaneGeometry(10, 10, 10, 10)
 
-    const material = new THREE.MeshStandardNodeMaterial({ map: uvChecker, transparent: true })
+    const material = new THREE.MeshStandardNodeMaterial({
+        // map: uvChecker,
+        color: 'crimson',
+        transparent: true
+    })
+
+    // material.colorNode = texture(
+    //     uvChecker,
+    //     rotateUV(uv().mul(3), -1, vec2(0)),
+    //     // 8
+    // )
+
+    const oscillation = oscSine(time.mul(0.2))
+
+    material.colorNode = hue(
+        texture(uvChecker).rgb,
+        time
+    )
 
     const fade = uv().sub(0.5).length().smoothstep(0.5, 0.2)
     material.opacityNode = fade
@@ -89,6 +110,10 @@ renderer.inspector = new Inspector()
     mesh.rotation.x = - Math.PI * 0.5
     mesh.receiveShadow = true
     scene.add(mesh)
+
+    // Tweaks
+    const gui = renderer.inspector.createParameters("Floor")
+    gui.addColor(material, 'color')
 }
 
 /**
@@ -99,6 +124,15 @@ renderer.inspector = new Inspector()
 
     const material = new THREE.MeshStandardNodeMaterial()
 
+    material.colorNode = triplanarTexture(
+        texture(uvChecker),
+        null,
+        null,
+        float(1),
+        positionWorld,
+        normalWorld
+    )
+    
     const mesh = new THREE.Mesh(geometry, material)
     mesh.castShadow = true
     mesh.receiveShadow = true
